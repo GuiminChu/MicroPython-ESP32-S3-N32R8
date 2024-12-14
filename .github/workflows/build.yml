@@ -14,6 +14,13 @@ jobs:
           path: micropython
           submodules: recursive
 
+      - name: Checkout MicroPython ulab
+        uses: actions/checkout@v3
+        with:
+          repository: v923z/micropython-ulab
+          path: ulab
+          submodules: recursive
+
       - name: Checkout MicroPython ESP32-S3 N32R8
         uses: actions/checkout@v3
         with:
@@ -41,14 +48,16 @@ jobs:
 
       - name: Build
         run: |
-          cd /home/runner/work/MicroPython-ESP32-S3-N32R8/MicroPython-ESP32-S3-N32R8/micropython
+          export BUILD_DIR=$(pwd)
+
+          cd $BUILD_DIR/micropython
           make -C mpy-cross
           
-          cd /home/runner/work/MicroPython-ESP32-S3-N32R8/MicroPython-ESP32-S3-N32R8/micropython/ports/esp32
+          cd $BUILD_DIR/micropython/ports/esp32
           source ~/esp/esp-idf/export.sh
           export IDF_TARGET=esp32s3
           make submodules
-          make BOARD=ESP32_S3_N32R8 BOARD_VARIANT=SPIRAM_OCT
+          make BOARD=ESP32_S3_N32R8 BOARD_VARIANT=SPIRAM_OCT USER_C_MODULES=$BUILD_DIR/ulab/code
 
       - name: Upload firmware
         uses: actions/upload-artifact@v4
